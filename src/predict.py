@@ -1,15 +1,28 @@
+import joblib
 import numpy as np
 import pandas as pd
 
-def predict_from_input(model, input_data_dict, feature_names):
-    # Hitung BMI jika Height dan Weight ada
-    if 'BMI' not in input_data_dict and 'Weight' in input_data_dict and 'Height' in input_data_dict:
-        height = input_data_dict.pop('Height')
-        weight = input_data_dict.pop('Weight')
-        input_data_dict['BMI'] = weight / ((height / 100) ** 2)
+FEATURE_NAMES = [
+    'HighBP', 'HighChol', 'CholCheck', 'BMI', 'Smoker', 'Stroke', 'HeartDiseaseorAttack',
+    'PhysActivity', 'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare',
+    'NoDocbcCost', 'GenHlth', 'MentHlth', 'PhysHlth', 'DiffWalk', 'Sex', 'Age',
+    'Education', 'Income'
+]
 
-    # Konversi ke DataFrame agar sesuai urutan feature
-    input_df = pd.DataFrame([input_data_dict], columns=feature_names)
+def load_model(path="model.pkl"):
+    return joblib.load(path)
 
+def predict_from_input(model, input_data: list):
+    # Validasi panjang input
+    if len(input_data) != len(FEATURE_NAMES):
+        raise ValueError(f"Jumlah fitur tidak sesuai. Diperlukan {len(FEATURE_NAMES)}, tetapi diberikan {len(input_data)}.")
+
+    # Validasi tipe angka
+    try:
+        input_data = [float(i) for i in input_data]
+    except ValueError:
+        raise ValueError("Semua input harus berupa angka.")
+
+    input_df = pd.DataFrame([input_data], columns=FEATURE_NAMES)
     prediction = model.predict(input_df)
     return prediction[0]
